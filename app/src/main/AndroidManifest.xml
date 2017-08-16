@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="br.com.livroandroid.carros">
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".CarrosApplication"
         android:allowBackup="true"
@@ -28,7 +30,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="android.support.v7.app.AppCompatActivity" />
         </activity>
-
         <activity
             android:name=".activity.CarrosActivity"
             android:parentActivityName=".activity.MainActivity">
@@ -36,7 +37,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.MainActivity" />
         </activity>
-
         <activity
             android:name=".activity.SiteLivroActivity"
             android:parentActivityName=".activity.MainActivity">
@@ -44,8 +44,13 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.MainActivity" />
         </activity>
-
-
+        <activity
+            android:name=".activity.CarroActivity"
+            android:parentActivityName=".activity.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.MainActivity" />
+        </activity>
     </application>
 
 </manifest>
