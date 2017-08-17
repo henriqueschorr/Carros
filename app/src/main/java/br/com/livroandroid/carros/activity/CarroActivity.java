@@ -2,6 +2,9 @@ package br.com.livroandroid.carros.activity;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.ImageView;
+
+import com.squareup.picasso.Picasso;
 
 import org.parceler.Parcels;
 
@@ -27,5 +30,8 @@ public class CarroActivity extends BaseActivity {
             frag.setArguments(getIntent().getExtras());
             getSupportFragmentManager().beginTransaction().add(R.id.CarroFragment, frag).commit();
         }
+
+        ImageView appBarImg = (ImageView) findViewById(R.id.appBarImg);
+        Picasso.with(getContext()).load(c.urlFoto).into(appBarImg);
     }
 }
