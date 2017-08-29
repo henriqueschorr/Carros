@@ -1,8 +1,10 @@
 package br.com.livroandroid.carros.fragments;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -66,12 +68,26 @@ public class CarrosFragment extends BaseFragment {
     }
 
     private void taskCarros(){
-        try {
-            this.carros = CarroService.getCarros(getContext(), tipo);
-        } catch (IOException e){
-            Log.e("livro", e.getMessage(), e);
-        }
-        recyclerView.setAdapter(new CarroAdapter(getContext(), carros, onClickCarro()));
+//       new Thread(){
+//           @Override
+//           public void run(){
+//               try {
+//                   carros = CarroService.getCarros(getContext(), tipo);
+//
+//                   getActivity().runOnUiThread(new Runnable() {
+//                       @Override
+//                       public void run() {
+//                           recyclerView.setAdapter(new CarroAdapter(getContext(), carros, onClickCarro()));
+//                           Toast.makeText(getActivity(), "AH", Toast.LENGTH_SHORT).show();
+//                       }
+//                   });
+//               } catch (IOException e){
+//                   Log.e("livro", e.getMessage(), e);
+//               }
+//           }
+//       }.start();
+
+        new GetCarrosTask().execute();
     }
 
     private CarroAdapter.CarroOnClickListener onClickCarro(){
@@ -84,5 +100,25 @@ public class CarrosFragment extends BaseFragment {
                 startActivity(intent);
             }
         };
+    }
+
+    private class GetCarrosTask extends AsyncTask<Void, Void, List<Carro>>{
+        @Override
+        protected List<Carro> doInBackground(Void... params){
+            try{
+                return CarroService.getCarros(getContext(), tipo);
+            } catch (IOException e){
+                alert("Erro: " + e.getMessage());
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(List<Carro> carros){
+            if(carros != null){
+                CarrosFragment.this.carros = carros;
+                recyclerView.setAdapter(new CarroAdapter(getContext(), carros, onClickCarro()));
+            }
+        }
     }
 }

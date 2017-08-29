@@ -3,6 +3,9 @@ package br.com.livroandroid.carros.domain;
 import android.content.Context;
 import android.util.Log;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -12,6 +15,7 @@ import java.util.List;
 
 import br.com.livroandroid.carros.R;
 import livroandroid.lib.utils.FileUtils;
+import livroandroid.lib.utils.HttpHelper;
 import livroandroid.lib.utils.XMLUtils;
 
 import static android.content.ContentValues.TAG;
@@ -23,20 +27,26 @@ import static livroandroid.lib.fragment.NavigationDrawerFragment.LOG_ON;
 
 public class CarroService {
 
+    private static final String URL = "http://www.livroandroid.com.br/livro/carros/carros_{tipo}.json";
+
     public static List<Carro> getCarros(Context context, int tipo) throws IOException{
-//        String tipoString = context.getString(tipo);
-//        List<Carro> carros = new ArrayList<Carro>();
-//
-//        for (int i=0; i<20; i++){
-//            Carro c = new Carro();
-//            c.nome = "Carro " + tipoString + ": " + i;
-//            c.desc = "Desc " + i;
-//            c.urlFoto = "http://www.livroandroid.com.br/livro/carros/esportivos/Ferrari_FF.png";
-//            carros.add(c);
-//        }
-        String xml = readFile(context, tipo);
-        List<Carro> carros = parserXML(context, xml);
+//        String json = readFile(context, tipo);
+        String tipoString = getTipo(tipo);
+        String url = URL.replace("{tipo}", tipoString);
+
+        HttpHelper http = new HttpHelper();
+        String json = http.doGet(url);
+        List<Carro> carros = parserJSON(context, json);
         return carros;
+    }
+
+    private static String getTipo(int tipo){
+        if(tipo == R.string.classicos){
+            return "classicos";
+        } else if(tipo == R.string.esportivos){
+            return "esportivos";
+        }
+        return "luxo";
     }
 
     private static String readFile(Context context, int tipo) throws IOException{
@@ -48,30 +58,28 @@ public class CarroService {
         return FileUtils.readRawFileString(context, R.raw.carros_luxo, "UTF-8");
     }
 
-    private static List<Carro> parserXML(Context context, String xml){
+    private static List<Carro> parserJSON(Context context, String json){
         List<Carro> carros = new ArrayList<Carro>();
-        Element root = XMLUtils.getRoot(xml, "UTF-8");
 
-        List<Node> nodeCarros = XMLUtils.getChildren(root, "carro");
+        try{
+            JSONObject root = new JSONObject(json);
+            JSONObject obj = root.getJSONObject("carros");
+            JSONArray jsonCarros = obj.getJSONArray("carro");
 
-        for (Node node : nodeCarros){
-            Carro c = new Carro();
-            c.nome = XMLUtils.getText(node, "nome");
-            c.desc = XMLUtils.getText(node, "desc");
-            c.urlFoto = XMLUtils.getText(node, "url_foto");
-            c.urlInfo = XMLUtils.getText(node, "url_info");
-            c.urlVideo = XMLUtils.getText(node, "url_video");
-            c.latitude = XMLUtils.getText(node, "latitude");
-            c.longitude = XMLUtils.getText(node, "longitude");
+            for(int i=0; i<jsonCarros.length(); i++){
+                JSONObject jsonCarro = jsonCarros.getJSONObject(i);
+                Carro c = new Carro();
 
-            if(LOG_ON){
-                Log.d(TAG, "Carro " + c.nome + " > " + c.urlFoto);
+                c.nome = jsonCarro.optString("nome");
+                c.desc = jsonCarro.optString("desc");
+                c.urlFoto = jsonCarro.optString("url_foto");
+                c.urlInfo = jsonCarro.optString("url_info");
+                c.urlVideo = jsonCarro.optString("url_video");
+                c.latitude = jsonCarro.optString("latitude");
+                c.longitude = jsonCarro.optString("longitude");
+                carros.add(c);
             }
-            carros.add(c);
-        }
-        if(LOG_ON){
-            Log.d(TAG, carros.size() + " encontrados.");
-        }
+        } catch (JSONException e){}
         return carros;
     }
 }
